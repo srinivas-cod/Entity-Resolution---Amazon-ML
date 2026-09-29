@@ -1,14 +1,14 @@
-# ML Challenge 2026: Business Entity Resolution Solution Template
+# ML Challenge 2026: Business Entity Resolution Solution Report
 
-**Team Name:** EntityResolvers  
-**Team Members:** Data Science & ML Engineering Team  
+**Author:** Srinivas S  
+**Project:** Amazon ML Challenge 2026 - Business Entity Resolution  
 **Submission Date:** September 2026  
 
 ---
 
 ## 1. Executive Summary
 
-This report documents our end-to-end Machine Learning pipeline for the Amazon ML Challenge 2026 (Business Entity Resolution). Tasked with matching 1,732,544 Source 1 ($S_1$) test business entities against independent, noisy sources ($S_2$ and $S_3$) on a strict consumer hardware budget (16GB RAM, 256GB SSD), traditional quadratic TF-IDF matrix approaches failed with 334GB out-of-memory errors. We solved this scalability barrier by architecting a **Dual-Key Hash Blocking** system that generated exactly 13,705,779 candidate pairs in linear time. We then trained a **LightGBM Gradient Boosted Decision Tree** utilizing string distance metrics (RapidFuzz, Jaro-Winkler, token sort), address overlap, and structural difference features, calibrated with a precision-heavy decision threshold ($\tau = 0.70$) specifically tuned for the challenge's macro-averaged $F_{0.5}$ metric.
+This report documents the end-to-end Machine Learning pipeline for the Amazon ML Challenge 2026 (Business Entity Resolution). Tasked with matching 1,732,544 Source 1 ($S_1$) test business entities against independent, noisy sources ($S_2$ and $S_3$) on standard commodity hardware (16GB RAM), traditional quadratic TF-IDF matrix approaches failed with 334GB out-of-memory errors. We solved this scalability barrier by architecting a **Dual-Key Hash Blocking** system that generated exactly 13,705,779 candidate pairs in linear time. We then trained a **LightGBM Gradient Boosted Decision Tree** utilizing string distance metrics (RapidFuzz, Jaro-Winkler, token sort), address overlap, and structural difference features, calibrated with a precision-heavy decision threshold ($\tau = 0.70$) specifically tuned for the challenge's macro-averaged $F_{0.5}$ metric.
 
 ---
 
@@ -21,7 +21,7 @@ During exploratory data analysis across the multi-million record datasets, sever
    - *Name Variations*: Frequent legal suffix permutations ("Corp", "Corporation", "Pvt Ltd", "Private Limited"), punctuation discrepancies ("&" vs "and"), acronyms, spelling errors, and token-order inversions ("Retail Amazon" vs "Amazon Retail").
    - *Address Inconsistencies*: Truncated strings, missing state or PIN codes, landmark-based descriptions ("Near Metro Station"), and localized transliterations.
    - *Open Set Domain Shift*: While training data only contained `US` and `India`, test data introduced `France`. Our pipeline remained strictly language/country-agnostic in feature extraction.
-3. **Hardware Boundary Constraint**: The HP Pavilion workstation operates on 16GB RAM and 256GB SSD. Generating an all-pairs sparse TF-IDF cosine similarity matrix across $1.73\text{M} \times 1.7\text{M}$ entries triggers memory allocations of $334\text{ GB}$, crashing the system instantly.
+3. **Memory & Computational Scalability**: Generating an all-pairs sparse TF-IDF cosine similarity matrix across $1.73\text{M} \times 1.7\text{M}$ entries triggers memory allocations of upwards of $334\text{ GB}$, causing immediate out-of-memory (OOM) fatal crashes. Linear-time blocking is essential.
 
 ### 2.2 Solution Strategy
 To ensure computational feasibility, high throughput, and maximum precision under $F_{0.5}$, we implemented a decoupled, two-stage architecture:
@@ -115,19 +115,20 @@ Because Precision is weighted $2\times$ more heavily than Recall, false positive
 ---
 
 ## 6. Conclusion
-By pairing linear-time Dual-Key Hash Blocking with an optimized LightGBM classifier and precision-tuned decision thresholding ($\tau = 0.70$), our pipeline achieves competitive entity resolution performance on 1.73M test entities while strictly conforming to 16GB consumer workstation memory boundaries. The solution is fully reproducible, deterministic, and modular.
+By pairing linear-time Dual-Key Hash Blocking with an optimized LightGBM classifier and precision-tuned decision thresholding ($\tau = 0.70$), our pipeline achieves robust entity resolution performance on 1.73M test entities while strictly conforming to single-node memory boundaries. The solution is fully reproducible, deterministic, and modular.
 
 ---
 
 ## Appendix
 
 ### A. Code Artefacts
-The complete runnable pipeline is packaged in `code/business_entity_resolution/`:
+The complete runnable pipeline is organized as follows:
 ```text
-code/business_entity_resolution/
-├── README.md               # End-to-end execution guide
+.
+├── README.md               # End-to-end execution guide & architecture
 ├── requirements.txt        # Pinned dependencies
 ├── generate_sub_ml.py      # Master production execution script
+├── generate_sub.py         # Country-partitioned baseline script
 └── src/
     ├── blocking.py         # Multi-pass & TF-IDF candidate generation modules
     ├── features.py         # Pairwise similarity feature extraction functions
