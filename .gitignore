@@ -1,0 +1,27 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+
+# Virtual Environments
+.venv/
+.venv*/
+env/
+venv/
+ENV/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Large dataset files and outputs (>100MB, rejected by GitHub)
+*.tsv
+*.csv
+*.zip
+*.tar.gz
+train/
+test/
+output/
+submission_package/
